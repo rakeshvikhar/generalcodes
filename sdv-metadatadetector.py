@@ -79,3 +79,47 @@ if __name__ == "__main__":
         synthetic_data = generate_synthetic_data(original_data, metadata, synthesizer_type=synth_type, num_rows=1000)
         synthetic_data.to_csv(f'synthetic_data_{synth_type}.csv', index=False)
         print(f"Generated synthetic data with {synth_type}")
+#-----------------------------
+# Update your profile_and_generate_metadata function (from your previous script) to handle sdtypes explicitly:
+
+# def profile_and_generate_metadata(file_path):
+#     df = pd.read_csv(file_path, dtype={'age': 'float32', 'gender': 'category'})
+    
+#     # Profile with DataProfiler
+#     from dataprofiler import Profiler
+#     data = Data(df)
+#     profile = Profiler(data)
+#     report = profile.report()
+    
+#     # PII detection with Presidio
+#     from presidio_analyzer import AnalyzerEngine
+#     analyzer = AnalyzerEngine()
+#     pii_columns = []
+#     for col in df.select_dtypes(include=['object']).columns:
+#         sample_text = df[col].iloc[0] if not df[col].isna().iloc[0] else ""
+#         if sample_text:
+#             results = analyzer.analyze(text=sample_text, entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER"], language="en")
+#             if results:
+#                 pii_columns.append(col)
+    
+#     # Generate SDV metadata
+#     from sdv.metadata import SingleTableMetadata
+#     metadata = SingleTableMetadata()
+#     metadata.detect_from_dataframe(df)
+    
+#     for col, stats in report['data_stats'].items():
+#         col_type = stats['data_type']
+#         is_sensitive = stats.get('is_sensitive', False) or col in pii_columns
+#         if col_type in ['int', 'float']:
+#             metadata.update_column(column_name=col, sdtype='numerical')
+#         elif col_type == 'datetime':
+#             metadata.update_column(column_name=col, sdtype='datetime')
+#         elif stats['categorical']:
+#             metadata.update_column(column_name=col, sdtype='categorical')
+#         elif is_sensitive:
+#             pii_type = 'email' if 'email' in col.lower() else 'text'
+#             metadata.update_column(column_name=col, sdtype=pii_type, pii=True)
+#         else:
+#             metadata.update_column(column_name=col, sdtype='text')
+    
+#     return df, metadata
