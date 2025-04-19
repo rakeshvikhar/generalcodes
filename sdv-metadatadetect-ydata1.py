@@ -17,7 +17,7 @@ def profile_and_generate_metadata(file_path):
     
     # Step 1: Profile with ydata-profiling
     profile = ProfileReport(df, title="Dataset Metadata Report", minimal=True)
-    report = profile.to_dict()  # Get report as dictionary
+    report = profile.description_set  # Access report data as object
     
     # Save profiling report as JSON (optional, for reference)
     profile.to_file("profile_report.json")
@@ -37,7 +37,7 @@ def profile_and_generate_metadata(file_path):
     metadata.detect_from_dataframe(df)  # Initial detection
     
     # Update metadata based on ydata-profiling and Presidio
-    for col, stats in report['variables'].items():
+    for col, stats in report.variables.items():
         col_type = stats['type']  # e.g., Numeric, Categorical, DateTime, Text
         is_sensitive = col in pii_columns
         
@@ -72,7 +72,7 @@ def generate_synthetic_data(df, metadata, synthesizer_type='GaussianCopula', num
 
 # Example usage
 if __name__ == "__main__":
-    file_path = "input_data.csv"
+    file_path = "/content/sample_data/california_housing_test.csv"
     
     # Profile and generate metadata
     original_data, metadata = profile_and_generate_metadata(file_path)
