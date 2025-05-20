@@ -1,4 +1,5 @@
 import pandas as pd
+import random
 from sdv.metadata import SingleTableMetadata
 from sdv.single_table import GaussianCopulaSynthesizer
 
@@ -30,6 +31,7 @@ synthetic_data = synthesizer.sample(num_rows=10)
 def enforce_text_length(data, column_name, min_length=4, max_length=8):
     """
     Ensure text column values have length between min_length and max_length.
+    If too long, truncate to a random length between min_length and max_length.
     
     Args:
         data (pd.DataFrame): Synthetic data
@@ -49,8 +51,9 @@ def enforce_text_length(data, column_name, min_length=4, max_length=8):
             padding = ''.join(['x' for _ in range(min_length - text_len)])
             return text + padding
         elif text_len > max_length:
-            # Truncate if too long
-            return text[:max_length]
+            # Truncate to a random length between min_length and max_length
+            random_length = random.randint(min_length, max_length)
+            return text[:random_length]
         return text
 
     # Apply length adjustment to the text column
