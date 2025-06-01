@@ -1,0 +1,37 @@
+### EDA agent prompt ####
+prompt = """
+Generate a Python script named 'EDA.py' in '/temp/python' for Tesla (TSLA) stock data from 2020-01-01 to 2025-05-31. The script must:
+1. Compute summary statistics for OHLC and Volume, save as 'summary_stats.csv'.
+2. Create visualizations (Close price as 'close_price_trend.png', ACF/PACF as 'acf_plot.png' and 'pacf_plot.png', 14-day rolling mean/std as 'rolling_stats.png').
+3. Generate a data quality report (missing data, outliers, stationarity), save as 'quality_report.json'.
+4. Compute a correlation matrix for OHLC and Volume, save as 'correlation_matrix.csv'.
+5. Provide feature insights (indicators: 14-day SMA, 14-day RSI, MACD; lags: Close_lag_1, Close_lag_14; events: earnings dates 2021-02-15, 2021-05-15), save as 'feature_insights.json'.
+6. Save preprocessed dataset (forward-fill missing values, add log returns) as 'preprocessed_stock_data.csv'.
+Execute the script and return a summary.
+"""
+
+## Feature engineering prompt ###
+prompt = """
+Generate a Python script named 'FeatureEngineering.py' in '/temp/python' using EDA outputs (preprocessed_stock_data.csv, feature_insights.json, correlation_matrix.csv, quality_report.json). The script must:
+1. Load 'preprocessed_stock_data.csv'.
+2. Create technical indicators (14-day SMA as 'SMA_14', 14-day RSI as 'RSI_14', MACD as 'MACD', 'MACD_Signal') and lagged features ('Close_lag_1', 'Close_lag_14') from 'feature_insights.json' or defaults.
+3. Add 'Earnings_Flag' for earnings dates from 'feature_insights.json' or defaults (2021-02-15, 2021-05-15).
+4. Drop features with correlation > 0.9 using 'correlation_matrix.csv'.
+5. Handle outliers from 'quality_report.json' and fill missing values.
+6. Save dataset with Date, Close, Volume, Log_Returns, SMA_14, RSI_14, MACD, MACD_Signal, Close_lag_1, Close_lag_14, Earnings_Flag to 'feature_engineered_data.csv'.
+7. Print generated feature names.
+Execute the script and return a summary with feature names.
+"""
+
+
+### Modeling agent prompt ###
+prompt = """
+Generate a Python script named 'Modeling.py' in '/temp/python' using 'feature_engineered_data.csv'. The script must:
+1. Load 'feature_engineered_data.csv'.
+2. Select all available features except 'Date' and 'Close'; use 'Close' as the target.
+3. Split data into 80% training and 20% testing sets (no shuffle).
+4. Train an XGBoost regression model.
+5. Save the model as 'xgboost_model.pkl' and predictions as 'predictions.csv' (columns: Date, Actual_Close, Predicted_Close).
+6. Handle missing values by forward-filling.
+Execute the script and return a summary.
+"""
