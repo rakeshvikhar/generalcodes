@@ -1,0 +1,74 @@
+import chainlit as cl
+from chainlit.storage import BaseStorageProvider
+import os
+import shutil
+
+class CustomLocalStorageProvider(BaseStorageProvider):
+    def __init__(self):
+        self.base_path = "/path/to/custom/storage"  # Replace with your desired directory
+        os.makedirs(self.base_path, exist_ok=True)
+
+    async def upload(self, file: cl.File) -> str:
+        # Save file to custom directory
+        destination = os.path.join(self.base_path, file.name)
+        with open(file.path, "rb") as src, open(destination, "wb") as dst:
+            shutil.copyfileobj(src, dst)
+        return destination
+
+    async def download(self, path: str) -> bytes:
+        # Read file from custom directory
+        with open(path, "rb") as f:
+            return f.read()
+
+    async def delete(self, path: str) -> bool:
+        # Delete file from custom directory
+        if os.path.exists(path):
+            os.remove(path)
+            return True
+        return False
+############## register custom storage provider as below in chainlit
+import chainlit as cl
+from chainlit.storage import BaseStorageProvider
+import os
+import shutil
+
+# Define the custom storage provider
+class CustomLocalStorageProvider(BaseStorageProvider):
+    def __init__(self):
+        self.base_path = "/path/to/custom/storage"
+        os.makedirs(self.base_path, exist_ok=True)
+
+    async def upload(self, file: cl.File) -> str:
+        destination = os.path.join(self.base_path, file.name)
+        with open(file.path, "rb") as src, open(destination, "wb") as dst:
+            shutil.copyfileobj(src, dst)
+        return destination
+
+    async def download(self, path: str) -> bytes:
+        with open(path, "rb") as f:
+            return f.read()
+
+    async def delete(self, path: str) -> bool:
+        if os.path.exists(path):
+            os.remove(path)
+            return True
+        return False
+
+# Register the storage provider
+cl.storage_provider = CustomLocalStorageProvider()
+
+# Example: Handle file uploads
+@cl.on_chat_start
+async def start():
+    files = await cl.AskFileMessage(
+        content="Please upload a file!",
+        accept=["application/pdf", "text/plain"],
+        max_size_mb=20
+    ).send()
+    file = files[0]
+    await cl.Message(content=f"Uploaded {file.name}, stored at {file.path}").send()
+
+@cl.on_message
+async def on_message(msg: cl.Message):
+    for file in msg.elements:
+        await cl.Message(content=f"Received {file.name}, stored at {file.path}").send()
